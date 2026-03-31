@@ -1,0 +1,82 @@
+---
+title: "TwD Project 2"
+subtitle: "Group number: G02D00"
+author: 
+format: html
+editor: visual
+---
+
+Insert data:
+
+```{r, message=FALSE, include=TRUE}
+library(tidyverse) 
+library(DT)      
+
+bodyfat <- read.table("bodyfat.txt", header = TRUE, sep = "\t", check.names = TRUE)
+dim(bodyfat)
+datatable(bodyfat)
+```
+
+# Data Cleaning and analysis
+
+## 1. Data Conversion
+
+Weight: Convert bls to cm Height: Convert inches to cm
+
+```{r, message = FALSE, warning = FALSE, fig.width=12, fig.height=10}
+# 1. Convert Weight (lbs to kg)
+bodyfat$Weight_kg <- bodyfat$Weight * 0.453592
+
+# 2. Convert Height (inches to cm)
+bodyfat$Height_cm <- bodyfat$Height * 2.54
+
+# 3. Bonus: Calculate BMI (Weight in kg / Height in meters squared)
+bodyfat$BMI <- bodyfat$Weight_kg / (bodyfat$Height_cm / 100)^2
+
+# View the first few rows
+head(bodyfat)
+```
+
+## 2. Multiple regression
+
+According to the multiple regression below, Body fat and Density have a very high correlation at -0.987. Additionally, Waist and Abdomen are perfectly correlated (1.00). We need to remove Density and Waist from the module to prevent multicollinearity.
+
+```{r, message = FALSE, warning = FALSE, fig.width=12, fig.height=10}
+library(GGally)
+ggpairs(bodyfat)
+```
+
+# Linear Regression
+
+## 1. Exhaustive Searches
+
+```{r, echo=FALSE}
+library(leaps)
+exh_leaps = regsubsets(Pct.BF ~ . - Density - Waist, data = bodyfat, nvmax = 13)
+summary(exh_leaps)$outmat
+
+```
+
+### 1.1 ImSubsets package
+
+```{r, echo=FALSE}
+library(lmSubsets)
+exh = lmSubsets(Pct.BF ~ . - Density - Waist, data = bodyfat, nvmax = 13)
+plot(exh)
+
+```
+
+## 2. Linear regression of all the perimeters except density and waist
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+model_full <- lm(Pct.BF ~ Age + Height + Neck + Chest + Abdomen + Forearm + Wrist, data = bodyfat)
+
+summary(model_full)
+```
+
+### 2.1 VIF
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(car)
+vif(model_full)
+```
