@@ -1,57 +1,147 @@
 ---
 title: "TwD Project 2"
-subtitle: "Group number: G02D00"
-author: 
+subtitle: "Group number: G02D01"
+author: Clea Yenifer, Sutolimin Widjaja, Vincent Lavoie, Yuchi Yu
 format: html
 editor: visual
 ---
 
-Insert data:
-
-```{r, message=FALSE, include=TRUE}
-library(tidyverse) 
-library(DT)      
+## Intialization of Libraries
+```{r, message=FALSE, warning=FALSE, include=TRUE}
+library(tidyverse)
+library(DT)
+library(lmSubsets)
+library(leaps)
 
 bodyfat <- read.table("bodyfat.txt", header = TRUE, sep = "\t", check.names = TRUE)
-dim(bodyfat)
-datatable(bodyfat)
+#dim(bodyfat)
+#datatable(bodyfat)
 ```
 
-# Data Cleaning and analysis
+# Data Cleaning and Analysis
 
-## 1. Data Conversion
+## Brief EDA
+-to add-
+##### why drop waist, not abdomen?
+##### should we drop other variables besides waist for multicoll
 
-Weight: Convert bls to cm Height: Convert inches to cm
+## Data Transformation
 
-```{r, message = FALSE, warning = FALSE, fig.width=12, fig.height=10}
-# 1. Convert Weight (lbs to kg)
-bodyfat$Weight_kg <- bodyfat$Weight * 0.453592
+Height: Convert inches to cm 
+Weight: Convert lbs to kg
 
-# 2. Convert Height (inches to cm)
-bodyfat$Height_cm <- bodyfat$Height * 2.54
+```{r}
+names(bodyfat) <- tolower(names(bodyfat))
 
-# 3. Bonus: Calculate BMI (Weight in kg / Height in meters squared)
-bodyfat$BMI <- bodyfat$Weight_kg / (bodyfat$Height_cm / 100)^2
+bodyfat$weight_kg <- bodyfat$weight * 0.453592
+bodyfat$height_cm <- bodyfat$height * 2.54
 
-# View the first few rows
-head(bodyfat)
+bodyfat = bodyfat[,-c(1,4,5)]
 ```
 
-## 2. Multiple regression
-
-According to the multiple regression below, Body fat and Density have a very high correlation at -0.987. Additionally, Waist and Abdomen are perfectly correlated (1.00). We need to remove Density and Waist from the module to prevent multicollinearity.
-
-```{r, message = FALSE, warning = FALSE, fig.width=12, fig.height=10}
-library(GGally)
-ggpairs(bodyfat)
+```{r, message = FALSE, warning = FALSE, fig.width=6, fig.height=4}
+corrplot::corrplot.mixed(cor(bodyfat),upper="ellipse", lower="number", tl.pos="lt", tl.cex = 0.6, number.cex = 0.6)
 ```
 
-# Linear Regression
+## Initial Model Experimentation
+
+```{r}
+ols1 = lm(pct.bf ~ .-waist, data = bodyfat)
+#summary(ols1)
+plot(fitted(ols1), resid(ols1),
+     main = "Residual vs Fitted Plot",
+     xlab = "Fitted Values",
+     ylab = "Residuals",
+     pch = 19, col = "blue")
+abline(h = 0, col = "red", lwd = 2)
+lines(lowess(fitted(ols1), resid(ols1)), col = "darkgreen", lwd = 2)
+```
+
+```{r}
+bodyfat2 = bodyfat %>% filter(pct.bf > 0)
+ols2 = lm(log(pct.bf) ~ .-waist, data = bodyfat2)
+plot(fitted(ols2), resid(ols2),
+     main = "Residual vs Fitted Plot (Linear)",
+     xlab = "Fitted Values",
+     ylab = "Residuals",
+     pch = 19, col = "blue")
+abline(h = 0, col = "red", lwd = 2)
+lines(lowess(fitted(ols2), resid(ols2)), col = "darkgreen", lwd = 2)
+```
+log Y isnt the right move bcz Log assumes Y can grow without limit. body fat pct is bounded 0-100 (theoretically)
+
+```{r}
+ols3 = lm(pct.bf ~ age + neck + chest + log(abdomen) + hip + thigh + knee + ankle + bicep + forearm + wrist + height_cm + log(weight_kg), data = bodyfat)
+summary(ols3)
+plot(fitted(ols3), resid(ols3),
+     main = "Residual vs Fitted Plot",
+     xlab = "Fitted Values",
+     ylab = "Residuals",
+     pch = 19, col = "blue")
+abline(h = 0, col = "red", lwd = 2)
+lines(lowess(fitted(ols3), resid(ols3)), col = "darkgreen", lwd = 2)
+```
+
+# Heteroskedasticity Test
+
+```{r}
+std_resid = rstandard(ols3)
+sqrt_std_resid = sqrt(abs(std_resid))
+plot(fitted(ols3), sqrt_std_resid,
+     main = "Scale-Location Plot (Linear)",
+     xlab = "Fitted Values",
+     ylab = "Sqrt(|Standardized Residuals|)",
+     pch = 19, col = "purple")
+lines(lowess(fitted(ols3), sqrt_std_resid), col = "darkgreen", lwd = 2)
+rm(std_resid, sqrt_std_resid)
+```
+
+
+```{r}
+rp_fas1 = lm(pct.bf ~ thigh, data = bodyfat)
+rp_fas2 = lm(pct.bf ~ I(thigh^2), data = bodyfat)
+rp_fas3 = lm(pct.bf ~ I(thigh^3), data = bodyfat)
+rp_lgfas = lm(pct.bf ~ log(thigh), data = bodyfat)
+
+(fas_df = data.frame(
+  Metric = c("Adj. R²", "AIC", "BIC"),
+  Original = c(summary(rp_fas1)$adj.r.squared, AIC(rp_fas1), BIC(rp_fas1)),
+  Squared = c(summary(rp_fas2)$adj.r.squared, AIC(rp_fas2), BIC(rp_fas2)),
+  Cubed = c(summary(rp_fas3)$adj.r.squared, AIC(rp_fas3), BIC(rp_fas3)),
+  Logged = c(summary(rp_lgfas)$adj.r.squared, AIC(rp_lgfas), BIC(rp_lgfas))
+))
+```
+
+```{r}
+b1 = lm(pct.bf ~ abdomen*chest, data = bodyfat)
+b2 = lm(pct.bf ~ abdomen + chest, data = bodyfat)
+b3 = lm(pct.bf ~ abdomen*weight_kg, data = bodyfat)
+b4 = lm(pct.bf ~ abdomen + weight_kg, data = bodyfat)
+b5 = lm(pct.bf ~ hip*thigh, data = bodyfat)
+b6 = lm(pct.bf ~ hip + thigh, data = bodyfat)
+b7 = lm(pct.bf ~ chest*hip, data = bodyfat)
+b8 = lm(pct.bf ~ chest + hip, data = bodyfat)
+
+(b_df = data.frame(
+  Metric = c("Adj. R²", "AIC", "BIC"),
+  Model1 = c(summary(b1)$adj.r.squared, AIC(b1), BIC(b1)),
+  Model2 = c(summary(b2)$adj.r.squared, AIC(b2), BIC(b2)),
+  Model3 = c(summary(b3)$adj.r.squared, AIC(b3), BIC(b3)),
+  Model4 = c(summary(b4)$adj.r.squared, AIC(b4), BIC(b4)),
+  Model5 = c(summary(b5)$adj.r.squared, AIC(b5), BIC(b5)),
+  Model6 = c(summary(b6)$adj.r.squared, AIC(b6), BIC(b6)),
+  Model7 = c(summary(b7)$adj.r.squared, AIC(b7), BIC(b7)),
+  Model8 = c(summary(b8)$adj.r.squared, AIC(b8), BIC(b8))
+))
+```
+
+
+# Competing Models
 
 ## 1. Exhaustive Searches
 
 ```{r, echo=FALSE}
-library(leaps)
+
 exh_leaps = regsubsets(Pct.BF ~ . - Density - Waist, data = bodyfat, nvmax = 13)
 summary(exh_leaps)$outmat
 
@@ -60,7 +150,6 @@ summary(exh_leaps)$outmat
 ### 1.1 ImSubsets package
 
 ```{r, echo=FALSE}
-library(lmSubsets)
 exh = lmSubsets(Pct.BF ~ . - Density - Waist, data = bodyfat, nvmax = 13)
 plot(exh)
 
