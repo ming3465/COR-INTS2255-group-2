@@ -13,6 +13,7 @@ library(DT)
 library(lmSubsets)
 library(leaps)
 library(car)
+library(caret)
 
 bodyfat <- read.table("bodyfat.txt", header = TRUE, sep = "\t", check.names = TRUE)
 #dim(bodyfat)
@@ -43,7 +44,6 @@ Height: Convert inches to cm
 Weight: Convert lbs to kg
 
 ```{r}
-
 names(bodyfat) <- tolower(names(bodyfat))
 
 bodyfat$weight_kg <- bodyfat$weight * 0.453592
@@ -77,7 +77,6 @@ log Y isnt the right move bcz Log assumes Y can grow without limit. body fat pct
 vif(ols1)
 ```
 based on the vif and when we test, it actually increases adj r2, we drop weight
-
 
 
 ```{r}
@@ -142,7 +141,16 @@ summary(model2)
 
 
 # Cross Validation
-
+```{r}
+folds = 10
+#cv_model1 = train(pct.bf ~ , method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+#cv_model2 = train(pct.bf ~ , method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+#cv_model3 = train(pct.bf ~ , method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+results = resamples(list(model1 = cv_model1, model2 = cv_model2, model3 = cv_model3))
+ggplot(results, metric = "MAE") + labs(y = "MAE")
+ggplot(results, metric = "RMSE") + labs(y = "RMSE")
+ggplot(results, metric = "Rsquared") + labs(y = "Rsquared")
+```
 
 
 # Heteroskedasticity Test
@@ -160,3 +168,4 @@ rm(std_resid, sqrt_std_resid)
 ```
 
 # Correlation of Error Terms
+
