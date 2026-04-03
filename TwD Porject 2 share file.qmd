@@ -80,7 +80,7 @@ based on the vif and when we test, it actually increases adj r2, we drop weight
 
 
 ```{r}
-ols2 = lm(pct.bf ~ age + neck + chest + log(abdomen) + hip + thigh + knee + ankle + bicep + forearm + wrist + height_cm, data = bodyfat)
+ols2 = lm(pct.bf ~ age + neck + chest + abdomen + hip + thigh + knee + ankle + bicep + forearm + wrist + height_cm, data = bodyfat)
 summary(ols2)
 plot(fitted(ols2), resid(ols2),
      main = "Residual vs Fitted Plot",
@@ -95,10 +95,11 @@ lines(lowess(fitted(ols2), resid(ols2)), col = "darkgreen", lwd = 2)
 vif(ols2)
 ```
 
-based on vif, we try removing chest, hip, thigh: they are insignificant statistically, vif high (>5), they are all strongly correl with each other and with abdomen, adj R2 increases after removing them
+based on vif, we try removing (chest), hip, thigh: they are insignificant statistically, vif high (>5), they are all strongly correl with each other and with abdomen, adj R2 increases after removing them
 
 ```{r}
-ols3 = lm(pct.bf ~ age + neck + log(abdomen) + knee + ankle + bicep + forearm + wrist + height_cm, data = bodyfat)
+#bodyfat$bmi = bodyfat$weight_kg/(bodyfat$height_cm/100)
+ols3 = lm(pct.bf ~ age + abdomen*chest + knee + ankle + bicep + forearm + wrist + log(height_cm), data = bodyfat)
 summary(ols3)
 plot(fitted(ols3), resid(ols3),
      main = "Residual vs Fitted Plot",
@@ -107,11 +108,10 @@ plot(fitted(ols3), resid(ols3),
      pch = 19, col = "blue")
 abline(h = 0, col = "red", lwd = 2)
 lines(lowess(fitted(ols3), resid(ols3)), col = "darkgreen", lwd = 2)
-vif(ols3)
+#vif(ols3)
 ```
 
-
-# Competing Models
+# Model Comparisons
 
 ## Linear Model (from above)
 ```{r}
@@ -142,11 +142,15 @@ summary(model2)
 
 # Cross Validation
 ```{r}
+set.seed(12345)
 folds = 10
-#cv_model1 = train(pct.bf ~ , method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
-#cv_model2 = train(pct.bf ~ , method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+
+cv_model1 = train(pct.bf ~ age + neck + log(abdomen) + knee + ankle + bicep + forearm + wrist + height_cm, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+cv_model2 = train(pct.bf ~ age + abdomen + wrist + height_cm, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
 #cv_model3 = train(pct.bf ~ , method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+
 results = resamples(list(model1 = cv_model1, model2 = cv_model2, model3 = cv_model3))
+
 ggplot(results, metric = "MAE") + labs(y = "MAE")
 ggplot(results, metric = "RMSE") + labs(y = "RMSE")
 ggplot(results, metric = "Rsquared") + labs(y = "Rsquared")
