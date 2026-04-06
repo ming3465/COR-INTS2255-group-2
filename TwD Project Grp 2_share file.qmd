@@ -1,5 +1,5 @@
 ---
-title: "TwD Project 2"
+title: "TwD Project Group 2"
 subtitle: "Group number: G02D01"
 author: Clea Yenifer, Sutolimin Widjaja, Vincent Lavoie, Yuchi Yu
 format: html
