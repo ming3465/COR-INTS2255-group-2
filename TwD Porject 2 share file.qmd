@@ -16,6 +16,7 @@ library(car)
 library(caret)
 
 bodyfat <- read.table("bodyfat.txt", header = TRUE, sep = "\t", check.names = TRUE)
+names(bodyfat) <- tolower(names(bodyfat))
 #dim(bodyfat)
 #datatable(bodyfat)
 ```
@@ -36,7 +37,10 @@ qqnorm(bodyfat$pct.bf)
 qqline(bodyfat$pct.bf, col = "red")
 par(mfrow = c(1,1))
 ```
-right skewed
+
+```{r, message = FALSE, warning = FALSE, fig.width=6, fig.height=4}
+corrplot::corrplot.mixed(cor(bodyfat),upper="ellipse", lower="number", tl.pos="lt", tl.cex = 0.6, number.cex = 0.6)
+```
 
 ## Data Transformation
 
@@ -44,8 +48,6 @@ Height: Convert inches to cm
 Weight: Convert lbs to kg
 
 ```{r}
-names(bodyfat) <- tolower(names(bodyfat))
-
 bodyfat$weight_kg <- bodyfat$weight * 0.453592
 bodyfat$height_cm <- bodyfat$height * 2.54
 
@@ -54,9 +56,7 @@ bodyfat = bodyfat[,-c(1,4,5)]
 bodyfat = bodyfat %>% filter(pct.bf > 0)
 ```
 
-```{r, message = FALSE, warning = FALSE, fig.width=6, fig.height=4}
-corrplot::corrplot.mixed(cor(bodyfat),upper="ellipse", lower="number", tl.pos="lt", tl.cex = 0.6, number.cex = 0.6)
-```
+
 
 ## Initial Model Experimentation
 
@@ -71,51 +71,46 @@ plot(fitted(ols1), resid(ols1),
 abline(h = 0, col = "red", lwd = 2)
 lines(lowess(fitted(ols1), resid(ols1)), col = "darkgreen", lwd = 2)
 ```
-log Y isnt the right move bcz Log assumes Y can grow without limit. body fat pct is bounded 0-100 theoretically. so we 
 
 ```{r}
 vif(ols1)
 ```
-based on the vif and when we test, it actually increases adj r2, we drop weight
-
 
 ```{r}
 ols2 = lm(pct.bf ~ age + neck + chest + abdomen + hip + thigh + knee + ankle + bicep + forearm + wrist + height_cm, data = bodyfat)
 summary(ols2)
-plot(fitted(ols2), resid(ols2),
-     main = "Residual vs Fitted Plot",
-     xlab = "Fitted Values",
-     ylab = "Residuals",
-     pch = 19, col = "blue")
-abline(h = 0, col = "red", lwd = 2)
-lines(lowess(fitted(ols2), resid(ols2)), col = "darkgreen", lwd = 2)
 ```
 
 ```{r}
 vif(ols2)
 ```
 
-based on vif, we try removing (chest), hip, thigh: they are insignificant statistically, vif high (>5), they are all strongly correl with each other and with abdomen, adj R2 increases after removing them
 
 ```{r}
-#bodyfat$bmi = bodyfat$weight_kg/(bodyfat$height_cm/100)
-ols3 = lm(pct.bf ~ age + abdomen*chest + knee + ankle + bicep + forearm + wrist + log(height_cm), data = bodyfat)
+ols3 = lm(pct.bf ~ age + neck + abdomen + hip + knee + ankle + bicep + forearm + wrist + height_cm, data = bodyfat)
 summary(ols3)
-plot(fitted(ols3), resid(ols3),
-     main = "Residual vs Fitted Plot",
-     xlab = "Fitted Values",
-     ylab = "Residuals",
-     pch = 19, col = "blue")
-abline(h = 0, col = "red", lwd = 2)
-lines(lowess(fitted(ols3), resid(ols3)), col = "darkgreen", lwd = 2)
-#vif(ols3)
+vif(ols3)
+```
+
+```{r}
+ols4 = lm(pct.bf ~ age + neck + abdomen + bicep + forearm + wrist + height_cm, data = bodyfat)
+summary(ols4)
+```
+
+```{r}
+ols5 = lm(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat)
+summary(ols5)
+```
+
+```{r}
+anova(ols2, ols5)
 ```
 
 # Model Comparisons
 
 ## Linear Model (from above)
 ```{r}
-model1 = lm(pct.bf ~ age + neck + log(abdomen) + knee + ankle + bicep + forearm + wrist + height_cm, data = bodyfat)
+model1 = lm(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat)
 ```
 
 ## Exhaustive Search
@@ -145,31 +140,84 @@ summary(model2)
 set.seed(12345)
 folds = 10
 
-cv_model1 = train(pct.bf ~ age + neck + log(abdomen) + knee + ankle + bicep + forearm + wrist + height_cm, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
-cv_model2 = train(pct.bf ~ age + abdomen + wrist + height_cm, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
-#cv_model3 = train(pct.bf ~ , method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+cv_model1 = train(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+cv_model2 = train(pct.bf ~ abdomen + weight_kg + wrist + bicep + age, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+cv_model3 = train(pct.bf ~ age + neck + chest + abdomen + bicep + wrist + height_cm, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
 
 results = resamples(list(model1 = cv_model1, model2 = cv_model2, model3 = cv_model3))
 
 ggplot(results, metric = "MAE") + labs(y = "MAE")
 ggplot(results, metric = "RMSE") + labs(y = "RMSE")
 ggplot(results, metric = "Rsquared") + labs(y = "Rsquared")
+
+
+data.frame(
+  Model = c("Model 1", "Model 2", "Model 3"),
+  RMSE = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$RMSE)),
+  MSE = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$RMSE^2)),
+  MAE = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$MAE)),
+  Rsquared = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$Rsquared))
+)
 ```
 
+```{r}
+final_model = lm(pct.bf ~ , data = bodyfat)
+```
 
-# Heteroskedasticity Test
+# Tests
+
+## Collinearity (Variance Inflation Factor)
 
 ```{r}
-std_resid = rstandard(ols3)
+vif(final_model, type = "predictor")
+```
+
+## Non-Linearity of Response-Predictor Relationship
+
+```{r}
+plot(fitted(final_model), resid(final_model),
+     main = "Residual vs Fitted Plot (Final)",
+     xlab = "Fitted Values",
+     ylab = "Residuals",
+     pch = 19, col = "blue")
+abline(h = 0, col = "red", lwd = 2)
+lines(lowess(fitted(final_model), resid(final_model)), col = "darkgreen", lwd = 2)
+```
+
+## Heteroskedasticity Test
+
+```{r}
+std_resid = rstandard(final_model)
 sqrt_std_resid = sqrt(abs(std_resid))
-plot(fitted(ols3), sqrt_std_resid,
+plot(fitted(final_model), sqrt_std_resid,
      main = "Scale-Location Plot",
      xlab = "Fitted Values",
      ylab = "Sqrt(|Standardized Residuals|)",
      pch = 19, col = "purple")
-lines(lowess(fitted(ols3), sqrt_std_resid), col = "darkgreen", lwd = 2)
+lines(lowess(fitted(final_model), sqrt_std_resid), col = "darkgreen", lwd = 2)
 rm(std_resid, sqrt_std_resid)
 ```
 
 # Correlation of Error Terms
 
+```{r}
+plot(resid(final_model), type = "o",
+     main = "Residuals vs Observation Order (Final)",
+     ylab = "Residuals", xlab = "Observation Order")
+abline(h = 0, col = "red")
+```
+
+## Outliers
+
+```{r}
+plot(fitted(final_model), studres(final_model),
+     main = "Studentised Residual vs Fitted Plot",
+     xlab = "Fitted Values",
+     ylab = "Studentised Residuals",
+     pch = 19, col = "blue")
+abline(h = 3, col = "red", lwd = 2, lty = 2)
+abline(h = -3, col = "red", lwd = 2, lty = 2)
+abline(h = 0, col = "darkgrey")
+outliers = which(abs(studres(final_model)) > 3)
+outliers
+```
