@@ -69,7 +69,17 @@ plot(fitted(ols1), resid(ols1),
      ylab = "Residuals",
      pch = 19, col = "blue")
 abline(h = 0, col = "red", lwd = 2)
-lines(lowess(fitted(ols1), resid(ols1)), col = "darkgreen", lwd = 2)
+lines(lowess(fitted(ols1), resid(ols1)), col = "darkgreen", lwd = 3)
+
+plot(fitted(ols1), resid(ols1),
+     main = "Residuals vs Fitted",
+     xlab = "Fitted Values",
+     ylab = "Residuals",
+     pch = 19, col = "#4472C4",
+     cex = 0.8,
+     frame.plot = FALSE)
+abline(h = 0, col = "#FF0000", lwd = 2, lty = 2)
+lines(lowess(fitted(ols1), resid(ols1)), col = "darkgreen", lwd = 2.5)
 ```
 
 ```{r}
@@ -203,6 +213,34 @@ vif(final_model, type = "predictor")
 ## Non-Linearity of Response-Predictor Relationship
 
 ```{r}
+par(mfrow = c(1, 2), bg = "white", family = "sans", mar = c(5, 5, 4, 2))
+
+# Residuals vs Fitted
+plot(fitted(final_model), resid(final_model),
+     main = "Residuals vs Fitted",
+     xlab = "Fitted Values",
+     ylab = "Residuals",
+     pch = 19, col = "#4472C4",
+     cex = 0.8,
+     frame.plot = FALSE)
+abline(h = 0, col = "#FF0000", lwd = 2, lty = 2)
+lines(lowess(fitted(final_model), resid(final_model)), col = "darkgreen", lwd = 2.5)
+
+# Q-Q Plot
+qqnorm(resid(final_model),
+       main = "Normal Q-Q Plot",
+       xlab = "Theoretical Quantiles",
+       ylab = "Sample Quantiles",
+       pch = 19, col = "#4472C4",
+       cex = 0.8,
+       frame.plot = FALSE)
+qqline(resid(final_model), col = "#FF0000", lwd = 2, lty = 2)
+
+par(mfrow = c(1, 1))
+```
+
+
+```{r}
 plot(fitted(final_model), resid(final_model),
      main = "Residual vs Fitted Plot (Final)",
      xlab = "Fitted Values",
@@ -222,7 +260,7 @@ plot(fitted(final_model), sqrt_std_resid,
      xlab = "Fitted Values",
      ylab = "Sqrt(|Standardized Residuals|)",
      pch = 19, col = "purple")
-lines(lowess(fitted(final_model), sqrt_std_resid), col = "darkgreen", lwd = 2)
+lines(lowess(fitted(final_model), sqrt_std_resid), col = "darkgreen", lwd = 3)
 rm(std_resid, sqrt_std_resid)
 ```
 
