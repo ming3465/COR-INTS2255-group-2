@@ -131,8 +131,36 @@ model2 = lm(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat)
 summary(model2)
 ```
 
-## Forward/Backward variable selection
+## Backward variable selection
 
+```{r}
+n <- nrow(bodyfat)
+M1 = lm(pct.bf ~ . -waist, data = bodyfat)
+
+step.back.bic = step(M1, 
+                     direction = "backward", 
+                     k = log(n),
+                     trace = FALSE)
+
+#summary(step.back.bic)
+round(summary(step.back.bic)$coefficients, 3)
+```
+
+
+## Forward variable selection
+
+```{r}
+M0 = lm(pct.bf ~ 1, data = bodyfat)
+
+step.fwd.bic = step(M0, 
+                    scope = list(lower = M0, upper = M1),
+                    direction = "forward",
+                    k = log(n),
+                    trace = FALSE)
+
+#summary(step.fwd.bic)
+round(summary(step.back.bic)$coefficients, 3)
+```
 
 
 # Cross Validation
@@ -141,10 +169,10 @@ set.seed(12345)
 folds = 10
 
 cv_model1 = train(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
-cv_model2 = train(pct.bf ~ abdomen + weight_kg + wrist + bicep + age, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
-cv_model3 = train(pct.bf ~ age + neck + chest + abdomen + bicep + wrist + height_cm, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+cv_model2 = train(pct.bf ~ abdomen + weight_kg + wrist, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
+#cv_model3 = train(pct.bf ~ age + neck + chest + abdomen + bicep + wrist + height_cm, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
 
-results = resamples(list(model1 = cv_model1, model2 = cv_model2, model3 = cv_model3))
+results = resamples(list(model1 = cv_model1, model2 = cv_model2))
 
 ggplot(results, metric = "MAE") + labs(y = "MAE")
 ggplot(results, metric = "RMSE") + labs(y = "RMSE")
@@ -152,16 +180,16 @@ ggplot(results, metric = "Rsquared") + labs(y = "Rsquared")
 
 
 data.frame(
-  Model = c("Model 1", "Model 2", "Model 3"),
-  RMSE = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$RMSE)),
-  MSE = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$RMSE^2)),
-  MAE = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$MAE)),
-  Rsquared = sapply(list(cv_model1, cv_model2, cv_model3), function(m) mean(m$resample$Rsquared))
+  Model = c("Model 1", "Model 2"),
+  RMSE = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$RMSE)),
+  MSE = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$RMSE^2)),
+  MAE = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$MAE)),
+  Rsquared = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$Rsquared))
 )
 ```
 
 ```{r}
-final_model = lm(pct.bf ~ , data = bodyfat)
+final_model = lm(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat)
 ```
 
 # Tests
@@ -215,8 +243,6 @@ plot(fitted(final_model), studres(final_model),
      xlab = "Fitted Values",
      ylab = "Studentised Residuals",
      pch = 19, col = "blue")
-abline(h = 3, col = "red", lwd = 2, lty = 2)
-abline(h = -3, col = "red", lwd = 2, lty = 2)
 abline(h = 0, col = "darkgrey")
 outliers = which(abs(studres(final_model)) > 3)
 outliers
