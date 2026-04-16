@@ -6,7 +6,8 @@ format: html
 editor: visual
 ---
 
-## Intialization of Libraries
+## Initialization of Libraries
+
 ```{r, message=FALSE, warning=FALSE, include=TRUE}
 library(tidyverse)
 library(DT)
@@ -24,10 +25,11 @@ names(bodyfat) <- tolower(names(bodyfat))
 # Data Cleaning and Analysis
 
 ## Brief EDA
+
 -to add-
 
 ```{r}
-summary(bodyfat)
+#summary(bodyfat)
 ```
 
 ```{r fig.width=6, fig.height=3}
@@ -44,8 +46,7 @@ corrplot::corrplot.mixed(cor(bodyfat),upper="ellipse", lower="number", tl.pos="l
 
 ## Data Transformation
 
-Height: Convert inches to cm 
-Weight: Convert lbs to kg
+Height: Convert inches to cm Weight: Convert lbs to kg
 
 ```{r}
 bodyfat$weight_kg <- bodyfat$weight * 0.453592
@@ -56,20 +57,11 @@ bodyfat = bodyfat[,-c(1,4,5)]
 bodyfat = bodyfat %>% filter(pct.bf > 0)
 ```
 
-
-
 ## Initial Model Experimentation
 
 ```{r}
 ols1 = lm(pct.bf ~ .-waist, data = bodyfat)
 summary(ols1)
-plot(fitted(ols1), resid(ols1),
-     main = "Residual vs Fitted Plot",
-     xlab = "Fitted Values",
-     ylab = "Residuals",
-     pch = 19, col = "blue")
-abline(h = 0, col = "red", lwd = 2)
-lines(lowess(fitted(ols1), resid(ols1)), col = "darkgreen", lwd = 3)
 
 plot(fitted(ols1), resid(ols1),
      main = "Residuals vs Fitted",
@@ -95,10 +87,12 @@ summary(ols2)
 vif(ols2)
 ```
 
-
 ```{r}
 ols3 = lm(pct.bf ~ age + neck + abdomen + hip + knee + ankle + bicep + forearm + wrist + height_cm, data = bodyfat)
 summary(ols3)
+```
+
+```{r}
 vif(ols3)
 ```
 
@@ -119,6 +113,7 @@ anova(ols2, ols5)
 # Model Comparisons
 
 ## Linear Model (from above)
+
 ```{r}
 model1 = lm(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat)
 ```
@@ -134,7 +129,6 @@ summary(exh_leaps)$outmat
 exh = lmSubsets(pct.bf ~ . -waist, data = bodyfat, nvmax = 13)
 plot(exh)
 ```
-
 
 ```{r}
 model2 = lm(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat)
@@ -156,7 +150,6 @@ step.back.bic = step(M1,
 round(summary(step.back.bic)$coefficients, 3)
 ```
 
-
 ## Forward variable selection
 
 ```{r}
@@ -169,18 +162,17 @@ step.fwd.bic = step(M0,
                     trace = FALSE)
 
 #summary(step.fwd.bic)
-round(summary(step.back.bic)$coefficients, 3)
+round(summary(step.fwd.bic)$coefficients, 3)
 ```
 
-
 # Cross Validation
+
 ```{r}
 set.seed(12345)
 folds = 10
 
 cv_model1 = train(pct.bf ~ age + abdomen + wrist + height_cm, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
 cv_model2 = train(pct.bf ~ abdomen + weight_kg + wrist, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
-#cv_model3 = train(pct.bf ~ age + neck + chest + abdomen + bicep + wrist + height_cm, data = bodyfat, method = "lm", trControl = trainControl(method="cv", number = folds, verboseIter = FALSE))
 
 results = resamples(list(model1 = cv_model1, model2 = cv_model2))
 
@@ -239,17 +231,6 @@ qqline(resid(final_model), col = "#FF0000", lwd = 2, lty = 2)
 par(mfrow = c(1, 1))
 ```
 
-
-```{r}
-plot(fitted(final_model), resid(final_model),
-     main = "Residual vs Fitted Plot (Final)",
-     xlab = "Fitted Values",
-     ylab = "Residuals",
-     pch = 19, col = "blue")
-abline(h = 0, col = "red", lwd = 2)
-lines(lowess(fitted(final_model), resid(final_model)), col = "darkgreen", lwd = 2)
-```
-
 ## Heteroskedasticity Test
 
 ```{r}
@@ -264,15 +245,6 @@ lines(lowess(fitted(final_model), sqrt_std_resid), col = "darkgreen", lwd = 3)
 rm(std_resid, sqrt_std_resid)
 ```
 
-# Correlation of Error Terms
-
-```{r}
-plot(resid(final_model), type = "o",
-     main = "Residuals vs Observation Order (Final)",
-     ylab = "Residuals", xlab = "Observation Order")
-abline(h = 0, col = "red")
-```
-
 ## Outliers
 
 ```{r}
@@ -284,4 +256,19 @@ plot(fitted(final_model), studres(final_model),
 abline(h = 0, col = "darkgrey")
 outliers = which(abs(studres(final_model)) > 3)
 outliers
+```
+
+## Prediction Interval
+
+```{r warning=FALSE}
+predictions = predict(final_model, newdata = bodyfat, interval = "prediction", level = 0.95)
+
+comparison = cbind(bodyfat, predictions)
+
+ggplot(comparison, aes(x = predictions, y = pct.bf)) +
+    geom_point() +
+    geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.2, fill = "red") +
+    geom_abline(intercept = 0, slope = 1, color = "blue") +
+    labs(title = "Predicted vs Actual",
+         x = "Predicted", y = "Actual")
 ```
