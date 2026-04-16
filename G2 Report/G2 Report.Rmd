@@ -1,39 +1,15 @@
 ---
-title: A Template for Two or One-Column Vignettes
+title: Predicting Body Fat Percentage
 author:
-  - name: First Author
-    affiliation: a
-  - name: Second Author
-    affiliation: a,b
+  - name: Clea Yenifer
+  - name: Sutolimin Widjaja
+  - name: Vincent Lavoie
+  - name: Yuchi Yu
 address:
-    
-  - code: a
-    address: Institute of Smoke and Magic, University of Sometown, Sometown, XY, 12345
-  - code: b
-    address: Department of Neat Tricks, Whereever State University, Someplace, MC, 67890
-# Optional: line of arbitrary text with additional information.
-#date_subtitle: Published in *Journal of Statistical Software*, 2018
+    address: Singapore Management University
 lead_author_surname: Author and Author
-doi_footer: "https://cran.r-project.org/package=YourPackage"
 abstract: |
-  Your abstract will be typeset here, and used by default a visually distinctive font.
-  An abstract should explain to the general reader the major contributions of the article. 
-# Optional: Acknowledgements
-acknowledgements: |
-  This template package builds upon, and extends, the work of the excellent
-  gratefully acknowledged as this work would not have been possible without them.  Our extensions
-  are under the same respective licensing term
-  [rticles](https://cran.r-project.org/package=rticles) package, and both packages rely on the
-  [PNAS LaTeX](http://www.pnas.org/site/authors/latex.xhtml) macros. Both these sources are
-  ([GPL-3](https://www.gnu.org/licenses/gpl-3.0.en.html) and
-  [LPPL (>= 1.3)](https://www.latex-project.org/lppl/)).
-# Optional: One or more keywords
-keywords:
-  - one
-  - two
-  - optional
-  - keywords
-  - here
+  This study investigates whether body fat percentage, a key indicator of health, can be accurately predicted using simple and accessible body measurements. Using a dataset of physical characteristics, a multiple linear regression model was developed to identify the most relevant predictors. Feature selection methods were then applied, and candidate models were evaluated based on out-of-sample performance. The final model, consisting of age, abdomen circumference, wrist circumference, and height, achieved the best balance between predictive accuracy and simplicity. It explains approximately 73% of the variation in body fat percentage. Overall, the findings suggest that body fat percentage can be reliably estimated using a small set of easily obtainable measurements, offering a simple and practical predictive tool.
 papersize: letter
 fontsize: 9pt
 # Optional: Force one-column layout, default is two-column
@@ -43,18 +19,14 @@ fontsize: 9pt
 # Optional: Enable one-sided layout, default is two-sided
 #one_sided: true
 # Optional: Enable section numbering, default is unnumbered
-#numbersections: true
+numbersections: true
 # Optional: Specify the depth of section number, default is 5
 #secnumdepth: 5
 # Optional: Skip inserting final break between acknowledgements, default is false
 skip_final_break: true
-# Optional: Bibliography 
 bibliography: pinp
-# Optional: Enable a 'Draft' watermark on the document
-#watermark: true
-footer_contents: "YourPackage Vignette"
+footer_contents: "Thinking with Data Group Project"
 output: pinp::pinp
-# Required: Vignette metadata for inclusion in a package.
 vignette: >
   %\VignetteIndexEntry{YourPackage-vignetteentry}
   %\VignetteKeywords{YourPackage, r, anotherkeyword}
@@ -65,165 +37,293 @@ editor_options:
     wrap: 72
 ---
 
-## Introduction
+# Introduction
 
-This *pinp is not PNAS* template started when the introduction to
-[Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) by \cite{PeerJ:Rcpp}
-was converted into this updated [Rcpp
-Introduction](https://eddelbuettel.github.io/pinp/Rcpp-introduction.pdf)
-vignette. It is based on the
-[pnas_article](https://github.com/rstudio/rticles/tree/master/inst/rmarkdown/templates/pnas_article)
-template of the wonderful
-[rticles](https://cran.r-project.org/package=rticles) package by
-\cite{CRAN:rticles}. The conversion from markdown to latex is
-facilitated by [rmarkdown](https://cran.r-project.org/package=rmarkdown)
-\citep{CRAN:rmarkdown} and
-[knitr](https://cran.r-project.org/package=knitr) \citep{CRAN:knitr}.
-The underlying LaTeX macros are from
-[pnas.org](http://www.pnas.org/site/authors/latex.xhtml).
+Body fat percentage is a key indicator of health that provides more
+meaningful information than body weight alone. It is commonly used to
+assess fitness levels and health risks, but accurate measurement
+typically requires clinical methods such as DEXA scans, which are often
+costly and not easily accessible.
 
-The remainder of the document carries over from the corresponding
-[pnas_article](https://github.com/rstudio/rticles/tree/master/inst/rmarkdown/templates/pnas_article)
-template document. but has been edited and updated to our use case. A
-few specific tips follow. In general, for fine-tuning some knowledge of
-LaTeX is helpful.
+This study aims to determine whether body fat percentage can be
+accurately predicted using simple and easily measurable body
+characteristics. Specifically, it addresses the following questions: how
+body fat percentage is related to basic body measurement variables;
+which variables are the most important predictors of body fat
+percentage; and whether a parsimonious model can achieve strong
+predictive performance compared to more complex alternatives. These
+questions are important in assessing whether simple body measurements
+can serve as a practical and reliable alternative to more complex and
+costly measurement methods.
 
-## Author Affiliations
+To investigate this, we use a dataset of physical characteristics as a
+training set and evaluate multiple linear regression models to determine
+which specification provides the best balance of predictive performance
+and simplicity.
 
-Per common academic best practice, you can include your department,
-institution, and complete address, with the ZIP/postal code, for each
-author. Use lower case letters to match authors with institutions, as
-shown in the example. Authors with an ORCID ID may supply this
-information at submission.
+# Data Set
 
-## Document Options
+The bodyfat dataset contains 250 observations of men of various ages.
+The raw dataset consists of 16 variables, with body fat percentage
+(pct.bf) as the dependent variable. Aside from density, pct.bf, age,
+weight, and height, the remaining variables are body circumferences (in
+centimetres) measuring the perimeter around different body parts. A full
+summary of the variables is provided in Figure 1 in the appendix.
 
-We support several options via the YAML header
+## Exploratory Data Analysis
 
--   Setting a DOI or URL footer, for example for the CRAN package URL,
-    which is placed in the bottom-left footer of the title page and even
-    pages;
--   Setting a footer label, for example *YourPackage Vignette* stating
-    your package, which is placed in the bottom-right footer on odd
-    pages;
--   Setting a free-form author field used on the inside footer;
--   Optional *Draft* watermark to be added to each page;
--   Line of custom text in subtitle (`date_subtitle`) suitable to give
-    publication info of the draft, e.g. journal name in a post-print;
--   Document date that appears in the footer can be specified manually
-    using `document_date`.
+From the correlation matrix plot (Figure ), we observe a near-perfect
+negative correlation (-0.99) between density and body fat percentage.
+This means we can predict body fat percentage solely from density.
+However, we note that density is calculated by dividing body mass
+(weight) by body volume. Although weight is easy to obtain, measuring
+body volume requires specialised methods such as water displacement,
+which are costly and not easily accessible. Hence, we decided to drop
+density from our
 
-## References
+Figure 2 also shows a perfect positive correlation between waist and
+abdomen, indicating that these variables are effectively
+interchangeable. So we removed waist and retained abdomen.
 
-Here we differ from PNAS and suggest natbib. References will appear in
-author-year form. Use `\citet{}`, `\citep{}`, etc as usual.
+# Analysis
 
-We default to the `jss.bst` style. To switch to a different bibliography
-style, please use `biblio-style: style` in the YAML header.
+## Data Transformation
 
-## Inline R Code
+Height was recorded in inches while all other body measurements (chest,
+abdomen, and so on) were in centimeters, so height was converted to
+centimeters for consistency. Weight was converted from pounds to
+kilograms to align with standard metric units commonly used. We observe
+that the dependent variable, body fat percentage, has one observation
+with value 0, which we omitted and identified as measurement error since
+this is not scientifically possible \citep{}.
 
-The PNAS sample included a fixed PNG image here, but this document
-prefers to show the results and embedding of *R* code.
+## Initial Model Experimentation
 
-```{r figex, fig.width=3, fig.height=3, cache=TRUE, echo=TRUE, fig.cap="Narrow ggplot2 figure"}
-library(ggplot2)
-ggplot(mtcars, aes(wt, mpg)) +
-    geom_point(size=3, aes(colour=factor(cyl))) +
-    theme(legend.position="none")
-```
+We start by fitting a linear model on percentage body fat as the
+dependent variable on all other variables except waist. Plotting
+residuals against fitted values, the smoother shows a mild wave-like
+pattern in which residuals are slightly negative at the lower and upper
+ends of the fitted range, and slightly positive in the middle. However,
+the deviations are small and the drift at the extremes is likely driven
+by sparse data rather than genuine nonlinearity. The linearity
+assumption is therefore considered reasonably satisfied.
 
-Here we use a standard knitr bloc with explicit options for
+The model summary shows a relatively strong fit with an R-squared value
+of 0.7466 (Adj R-squared: 0.7326), though only age, abdomen, and wrist
+are statistically significant. Given the strong correlations between
+predictor variables spotted in EDA, we check VIF for multicollinearity.
+Weight stands out with a VIF over 40. It is also heavily correlated with
+other predictors, with over 0.8 correlation with neck, chest, abdomen,
+hip, thigh, and knee. Beyond this, weight does not distinguish between
+fat and lean mass, meaning individuals with the same weight can have
+very different body compositions. As a result, its inclusion may inflate
+model fit without adding meaningful predictive value, so it is excluded.
 
--   figure width and height (`fig.width`, `fig.height`), both set to
-    three inches;
--   whether the code is shown (`echo=TRUE`); and
--   the caption (`fig.cap`) as shown above.
+Refitting without weight keeps R² unchanged at 0.7466 but raises Adj R²
+to 0.7337. Interestingly, neck and height both become statistically
+significant - previously, weight was absorbing their contribution due to
+high correlation, potentially obscuring their association with body fat.
+Checking VIF again, chest, abdomen, hip, and thigh still show VIF \> 5.
+This is expected because chest and abdomen both measure trunk (torso)
+size, and hip and thigh both capture lower body size, so the variables
+are essentially telling the same story. We retain the stronger
+representative from each pair to address multicollinearity. Abdomen is
+kept over chest as it is more strongly correlated to body fat
+percentage, and hip is kept over thigh for similar reasons. Chest and
+thigh are dropped on both grounds of high VIF and statistical
+insignificance (p \> 0.10).
 
-## Digital Figures
+However, upon refitting, hip continues to show high VIF with abdomen and
+remains statistically insignificant. With no statistical or unique
+theoretical justification to retain it, hip is dropped. Knee and ankle
+are removed at this stage too. Intuitively, these are joints so their
+size is largely determined by bone structure, and unlike the abdomen or
+hip, these sites are less directly associated with fat accumulation.
+This intuition is reflected in their very high p-values, confirming they
+add little predictive value. Bicep and forearm are also statistically
+insignificant. This is not surprising because arm circumferences are
+heavily influenced by muscle mass not fat. A person with well-developed
+arms from regular physical activity would have large bicep and forearm
+measurements despite potentially low body fat, meaning these variables
+conflate fat and lean mass in a way that weakens their predictive value.
+Neck, while borderline significant here (p = 0.058), becomes
+insignificant once bicep and forearm are removed, suggesting its earlier
+significance was partly a result of the surrounding noise. All three are
+dropped, giving our first candidate model (age + abdomen + wrist +
+height_cm).
 
-Markdown, Pandoc and LaTeX support `.eps` and `.pdf` files.
+## Model Comparison
 
-Figures and Tables should be labelled and referenced in the standard way
-using the `\label{}` and `\ref{}` commands.
+After manually arriving at a candidate model, we also identified
+candidate models through three feature selection approaches:
 
-The R examples above show how to insert a column-wide figure. To insert
-a figure wider than one column, please use the
-`\begin{figure*}...\end{figure*}` environment.
+### Exhaustive Search
 
-One (roundabout) way of doing this is to *not* actually plot a figure,
-but to save it in a file as the following segment shows:
+We first perform an exhaustive search, which considers all possible
+combinations of predictors. Each model is evaluated using BIC (Bayesian
+Information Criterion), which, compared to the Akaike Information
+Criterion, imposes a heavier penalty on model complexity and therefore
+tends to favour simpler, more parsimonious models. As this aligns with
+our objective, we adopt BIC as our selection criterion.
 
-```{r densityPlot, echo=TRUE}
-library(ggplot2)
-p <- ggplot(data = midwest,
-            mapping = aes(x = area,
-                          fill = state,
-                          color = state)) +
-    geom_density(alpha = 0.3)
-## save to file
-suppressMessages(ggsave("densities.pdf", p))
-```
+We observe that BIC reaches its minimum when the model includes 4
+predictors. Therefore, based on Figure X, we select the model with age,
+height, abdomen, and wrist. Interestingly, we obtain the same model as
+the first candidate model.
 
-This file is then included via standard LaTeX commands.
+### Backward Variable Selection
 
-\begin{figure*}
-  \begin{center}
-    \includegraphics[width=0.66\textwidth, height=3.5in]{densities} 
-  \end{center}
-  \caption{Wide ggplot2 figure}\label{fig}
-\end{figure*}
+We also conducted backward variable selection based on BIC. In this
+approach, variables are removed one at a time until the model reaches
+its minimum BIC value. Based on Figure X, the model achieves the lowest
+BIC when age, height, abdomen, and wrist are included as predictors.
+Notably, this also results in the same set of predictors as those
+obtained from the manual and exhaustive search methods.
 
-## Typeset Code (But Do Not Run It)
+### Forward Variable Selection
 
-We can also just show code.
+For further comparison, we also performed forward variable selection
+based on BIC. In this approach, variables are added one at a time until
+the model reaches its minimum BIC value. The resulting model includes
+abdomen, weight, and wrist as predictors, which becomes our second
+candidate model.
 
-``` r
-xx <- faithful[,"eruptions"]
-fit <- density(xx)
-plot(fit)
-```
+To assess which candidate model is best, we perform out-of-sample tests
+next.
 
-This simply used a pandoc bloc started and ended by three backticks,
-with `r` as the language choice. Similarly, *many* other languages can
-be typeset directly simply by relying on pandoc.
+## Cross Validation
 
-## Single column equations
+To evaluate the out-of-sample performance on unseen data, we apply
+10-fold cross-validation across our 2 candidate models. Rather than a
+single train-test split, 10-fold cross-validation repeatedly partitions
+the data into 10 equal folds, training on 9 and testing on the remaining
+1, cycling through all folds. This gives a more robust estimate of
+out-of-sample performance for a dataset of this size.
 
-Authors may use 1- or 2-column equations in their article, according to
-their preference.
+We tested this approach on 2 different models, with the differences as
+listed below:
 
-To allow an equation to span both columns, options are to use the
-`\begin{figure*}...\end{figure*}` environment mentioned above for
-figures. The `\begin{widetext}...\end{widetext}` environment as shown in
-equation \ref{eqn:example} below is deprecated, but \LaTeX commands
-`\onecolumn` and `\twocolumn` work fine.
+-   Model 1: Manual/Exhaustive search model/Backward variable selection
 
-Please note that this option may run into problems with floats and
-footnotes, as mentioned in the [cuted package
-documentation](http://texdoc.net/pkg/cuted). In the case of problems
-with footnotes, it may be possible to correct the situation using
-commands `\footnotemark` and `\footnotetext`.
+-   Model 2: Forward variable selection
+
+Both models perform very similarly in terms of predictive ability.
+
+Based on MAE and RMSE (see Figure X), Model 1 performs slightly better
+than Model 2, with MAE lower by 0.034 and RMSE lower by 0.031. This
+suggests that Model 1 produces more accurate predictions on average and
+is slightly better at limiting large prediction errors.
+
+In contrast, Model 2 has a marginally higher R2 (0.745 vs 0.724),
+indicating that it explains a slightly greater proportion of the
+variation in body fat percentage. However, a higher R2 does not
+necessarily imply better predictive performance, especially in this
+case. The improvement in R2 is likely driven by the inclusion of weight,
+which we identified as a problematic variable due to multicollinearity
+and weak conceptual relevance.
+
+Importantly, both exhaustive and backward selection procedures (based on
+BIC) converge to the same specification as Model 1. This provides
+additional evidence that a parsimonious specification can achieve
+comparable, if not better, predictive performance. Therefore, Model 1 is
+preferred as the more parsimonious and robust model, retaining only the
+most reliable predictors while avoiding unnecessary complexity.
+
+## Assumptions Checking
+
+In Figure X, the residuals vs fitted values plot for the final model
+shows a mild wave-like pattern, similar to Figure X for the initial
+model. However, as discussed previously, this is likely driven by
+limited observations at the upper extremes rather than true
+non-linearity, so the linearity assumption is considered satisfied.
+Residual diagnostics further show that the Q-Q plot is approximately
+linear, suggesting no major violations of normality. The scale-location
+plot shows a roughly horizontal trend, indicating no clear evidence of
+heteroskedasticity. Finally, independence is assumed since each
+observation corresponds to a different individual, with no repeated
+measurements, clustering, or time-series structure in the data.
+
+Finally, no observations exceed three standard deviations from the mean,
+suggesting that there are no significant outliers.
+
+# Discussion and Conclusion
 
 \begin{equation}
   \begin{aligned}
-(x+y)^3&=(x+y)(x+y)^2\\
-       &=(x+y)(x^2+2xy+y^2) \\
-       &=x^3+3x^2y+3xy^3+x^3. 
-       \label{eqn:example} 
+pct.bf = 3.69 + 0.056age + 0.767abdomen - 1.929wrist - 0.128height_cm
+       \label{eqn:model1} 
   \end{aligned}
 \end{equation}
-```{=html}
-<!-- pandoc writes all tables using longtable, which fails in 2-column mode
 
-  Species                    CBS     CV     G3
-  ----------------------- ------ ------ ------
-  1\. Acetaldehyde           0.0    0.0    0.0
-  2\. Vinyl alcohol          9.1    9.6   13.5
-  3\. Hydroxyethylidene     50.8   51.2   54.0
+# References
 
-  : Comparison of the fitted potential energy surfaces and ab initio
-  benchmark electronic energy calculations
+\newpage\appendix\section{Appendix}
 
--->
+```{r figure1, echo=FALSE, warning=FALSE, results='asis'}
+library(ggplot2)
+
+bodyfat <- read.table("../bodyfat.txt", header = TRUE, sep = "\t", check.names = TRUE)
+
+vars <- data.frame(
+  Variable = c(
+    "Density", "Pct.BF", "Age", "Weight", "Height",
+    "Neck", "Chest", "Abdomen", "Waist",
+    "Hip", "Thigh", "Knee", "Ankle",
+    "Bicep", "Forearm", "Wrist"
+  ),
+  Description = c(
+    "Body density",
+    "Body fat percentage",
+    "Age of individual",
+    "Body weight",
+    "Height",
+    "Neck circumference",
+    "Chest circumference",
+    "Abdomen circumference",
+    "Waist circumference",
+    "Hip circumference",
+    "Thigh circumference",
+    "Knee circumference",
+    "Ankle circumference",
+    "Bicep circumference",
+    "Forearm circumference",
+    "Wrist circumference"
+  ),
+  Unit = c(
+    "g/cm³",
+    "%",
+    "years",
+    "lb",
+    "in",
+    "cm",
+    "cm",
+    "cm",
+    "in",
+    "cm",
+    "cm",
+    "cm",
+    "cm",
+    "cm",
+    "cm",
+    "cm"
+  )
+)
+knitr::kable(vars,
+             format = "latex",
+             booktabs = TRUE,
+             caption = "Summary of variables and units")
 ```
+
+```{r figure2, echo=FALSE, warning=FALSE}
+pdf("figure2.pdf", width = 6, height = 5)
+corrplot::corrplot.mixed(cor(bodyfat), upper="ellipse", lower="number", 
+                         tl.pos="lt", tl.cex = 0.6, number.cex = 0.6)
+dev.off()
+```
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=0.66\textwidth, height=3.5in, page =1]{figure2}
+  \end{center}
+  \caption{Correlation Matrix Plot}\label{fig:corr}
+\end{figure}

@@ -184,7 +184,6 @@ ggplot(results, metric = "Rsquared") + labs(y = "Rsquared")
 data.frame(
   Model = c("Model 1", "Model 2"),
   RMSE = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$RMSE)),
-  MSE = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$RMSE^2)),
   MAE = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$MAE)),
   Rsquared = sapply(list(cv_model1, cv_model2), function(m) mean(m$resample$Rsquared))
 )
