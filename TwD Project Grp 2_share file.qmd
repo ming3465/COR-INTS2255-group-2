@@ -15,6 +15,7 @@ library(lmSubsets)
 library(leaps)
 library(car)
 library(caret)
+library(MASS)
 
 bodyfat <- read.table("bodyfat.txt", header = TRUE, sep = "\t", check.names = TRUE)
 names(bodyfat) <- tolower(names(bodyfat))
@@ -25,8 +26,6 @@ names(bodyfat) <- tolower(names(bodyfat))
 # Data Cleaning and Analysis
 
 ## Brief EDA
-
--to add-
 
 ```{r}
 #summary(bodyfat)
@@ -46,7 +45,9 @@ corrplot::corrplot.mixed(cor(bodyfat),upper="ellipse", lower="number", tl.pos="l
 
 ## Data Transformation
 
-Height: Convert inches to cm Weight: Convert lbs to kg
+Height: Convert inches to cm
+
+Weight: Convert lbs to kg
 
 ```{r}
 bodyfat$weight_kg <- bodyfat$weight * 0.453592
@@ -62,7 +63,9 @@ bodyfat = bodyfat %>% filter(pct.bf > 0)
 ```{r}
 ols1 = lm(pct.bf ~ .-waist, data = bodyfat)
 summary(ols1)
+```
 
+```{r}
 plot(fitted(ols1), resid(ols1),
      main = "Residuals vs Fitted",
      xlab = "Fitted Values",
@@ -176,9 +179,9 @@ cv_model2 = train(pct.bf ~ abdomen + weight_kg + wrist, data = bodyfat, method =
 
 results = resamples(list(model1 = cv_model1, model2 = cv_model2))
 
-ggplot(results, metric = "MAE") + labs(y = "MAE")
-ggplot(results, metric = "RMSE") + labs(y = "RMSE")
-ggplot(results, metric = "Rsquared") + labs(y = "Rsquared")
+bwplot(results, metric = "RMSE")
+bwplot(results, metric = "MAE")
+bwplot(results, metric = "Rsquared")
 
 
 data.frame(
@@ -254,7 +257,7 @@ plot(fitted(final_model), studres(final_model),
      pch = 19, col = "blue")
 abline(h = 0, col = "darkgrey")
 outliers = which(abs(studres(final_model)) > 3)
-outliers
+#outliers
 ```
 
 ## Prediction Interval
@@ -268,6 +271,6 @@ ggplot(comparison, aes(x = predictions, y = pct.bf)) +
     geom_point() +
     geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.2, fill = "red") +
     geom_abline(intercept = 0, slope = 1, color = "blue") +
-    labs(title = "Predicted vs Actual",
+    labs(title = "Predicted vs Actual Body Fat Percentage",
          x = "Predicted", y = "Actual")
 ```

@@ -19,20 +19,23 @@
 \definecolor{pnasbluetext}{RGB}{0,101,165} % default in pinp.cls
 
 
+\usepackage{float}
+\bibliographystyle{jss}
+\captionsetup[figure]{justification=centering,singlelinecheck=false}
 
 \title{Predicting Body Fat Percentage}
 
-\author[]{Clea Yenifer}
-\author[]{Sutolimin Widjaja}
-\author[]{Vincent Lavoie}
-\author[]{Yuchi Yu}
+\author[]{Clea Yenifer (01477943)}
+\author[]{Sutolimin Widjaja (01540923)}
+\author[]{Vincent Lavoie (01550327)}
+\author[]{Yuchi Yu (01549686)}
 
   \affil[]{Singapore Management University}
 
 \setcounter{secnumdepth}{5}
 
 % Please give the surname of the lead author for the running footer
-\leadauthor{Author and Author}
+\leadauthor{Group 2}
 
 % Keywords are not mandatory, but authors are strongly encouraged to provide them. If provided, please include two to five keywords, separated by the pipe symbol, e.g:
  
@@ -101,25 +104,25 @@ and simplicity.
 
 The bodyfat dataset contains 250 observations of men of various ages.
 The raw dataset consists of 16 variables, with body fat percentage
-(pct.bf) as the dependent variable. Aside from density, pct.bf, age,
+(\(pct.bf\)) as the dependent variable. Aside from density, pct.bf, age,
 weight, and height, the remaining variables are body circumferences (in
 centimetres) measuring the perimeter around different body parts. A full
-summary of the variables is provided in Figure 1 in the appendix.
+summary of the variables is provided in Figure \ref{fig:corr} in the
+appendix.
 
 \subsection{Exploratory Data Analysis}\label{exploratory-data-analysis}
 
-From the correlation matrix plot (Figure @ref(fig:corr)), we observe a
+From the correlation matrix plot (Figure \ref{fig:corr}), we observe a
 near-perfect negative correlation (-0.99) between density and body fat
 percentage. This means we can predict body fat percentage solely from
 density. However, we note that density is calculated by dividing body
 mass (weight) by body volume. Although weight is easy to obtain,
 measuring body volume requires specialised methods such as water
 displacement, which are costly and not easily accessible. Hence, we
-decided to drop density from our
-
-Figure 2 also shows a perfect positive correlation between waist and
-abdomen, indicating that these variables are effectively
-interchangeable. So we removed waist and retained abdomen.
+decided to drop density from our dataset. (Figure \ref{fig:corr}) also
+shows a perfect positive correlation between waist and abdomen,
+indicating that these variables are effectively interchangeable. So we
+removed waist and retained abdomen.
 
 \section{Analysis}\label{analysis}
 
@@ -131,63 +134,48 @@ centimeters for consistency. Weight was converted from pounds to
 kilograms to align with standard metric units commonly used. We observe
 that the dependent variable, body fat percentage, has one observation
 with value 0, which we omitted and identified as measurement error since
-this is not scientifically possible \citep{}.
+this is not scientifically possible \citep{menshealth2020}.
 
 \subsection{Initial Model
 Experimentation}\label{initial-model-experimentation}
 
-We start by fitting a linear model on percentage body fat as the
-dependent variable on all other variables except waist. Plotting
-residuals against fitted values, the smoother shows a mild wave-like
-pattern in which residuals are slightly negative at the lower and upper
-ends of the fitted range, and slightly positive in the middle. However,
-the deviations are small and the drift at the extremes is likely driven
-by sparse data rather than genuine nonlinearity. The linearity
-assumption is therefore considered reasonably satisfied.
+We start by fitting a linear model using all predictors except waist.
+The residuals vs fitted plot (Figure \ref{fig:residplot}) shows a mild
+wave-like pattern showing slight overestimation at the lower and upper
+ends. However, the deviations are small and likely driven by sparse data
+(at upper end) rather than genuine nonlinearity. The linearity
+assumption is considered reasonably satisfied.
 
-The model summary shows a relatively strong fit with an R-squared value
-of 0.7466 (Adj R-squared: 0.7326), though only age, abdomen, and wrist
-are statistically significant. Given the strong correlations between
-predictor variables spotted in EDA, we check VIF for multicollinearity.
-Weight stands out with a VIF over 40. It is also heavily correlated with
-other predictors, with over 0.8 correlation with neck, chest, abdomen,
-hip, thigh, and knee. Beyond this, weight does not distinguish between
-fat and lean mass, meaning individuals with the same weight can have
-very different body compositions. As a result, its inclusion may inflate
-model fit without adding meaningful predictive value, so it is excluded.
+The model achieves an \(R^2\) value of 0.7466 (\(Adjusted\ R^2\)=
+0.7326), though only age, abdomen, and wrist are statistically
+significant. Given the strong correlations between predictor variables
+observed in EDA, we check for multicollinearity using VIF. Weight stands
+out with a VIF over 40, while being heavily correlated with other
+predictors (see Figure \ref{fig:corr}). Furthermore, weight does not
+distinguish between fat and lean mass, so its inclusion may inflate
+model fit without adding meaningful predictive value. Weight is thus
+excluded.
 
-Refitting without weight keeps R² unchanged at 0.7466 but raises Adj R²
-to 0.7337. Interestingly, neck and height both become statistically
-significant - previously, weight was absorbing their contribution due to
-high correlation, potentially obscuring their association with body fat.
-Checking VIF again, chest, abdomen, hip, and thigh still show VIF
-\textgreater{} 5. This is expected because chest and abdomen both
-measure trunk (torso) size, and hip and thigh both capture lower body
-size, so the variables are essentially telling the same story. We retain
-the stronger representative from each pair to address multicollinearity.
-Abdomen is kept over chest as it is more strongly correlated to body fat
-percentage, and hip is kept over thigh for similar reasons. Chest and
-thigh are dropped on both grounds of high VIF and statistical
-insignificance (p \textgreater{} 0.10).
+Refitting without weight keeps \(R^2\) unchanged but raises
+\(Adjusted\ R^2\) to 0.734. Chest, abdomen, hip, and thigh still show
+VIF \textgreater{} 5, as they measure overlapping body parts. We retain
+abdomen over chest and hip over thigh based on stronger correlations
+with body fat. So chest and thigh are dropped, confirmed by their high
+p-values. Upon refitting, hip continues to show high VIF with abdomen
+and remains insignificant, so it is dropped too.
 
-However, upon refitting, hip continues to show high VIF with abdomen and
-remains statistically insignificant. With no statistical or unique
-theoretical justification to retain it, hip is dropped. Knee and ankle
-are removed at this stage too. Intuitively, these are joints so their
-size is largely determined by bone structure, and unlike the abdomen or
-hip, these sites are less directly associated with fat accumulation.
-This intuition is reflected in their very high p-values, confirming they
-add little predictive value. Bicep and forearm are also statistically
-insignificant. This is not surprising because arm circumferences are
-heavily influenced by muscle mass not fat. A person with well-developed
-arms from regular physical activity would have large bicep and forearm
-measurements despite potentially low body fat, meaning these variables
-conflate fat and lean mass in a way that weakens their predictive value.
-Neck, while borderline significant here (p = 0.058), becomes
-insignificant once bicep and forearm are removed, suggesting its earlier
-significance was partly a result of the surrounding noise. All three are
-dropped, giving our first candidate model (age + abdomen + wrist +
-height\_cm).
+Knee and ankle are removed at this stage. Intuitively, these are joints
+whose size reflects bone structure rather than fat accumulation,
+confirmed by their high p-values. Bicep and forearm are unreliable fat
+predictors as someone with large biceps could have either low (muscular)
+or high (larger person) body fat, confirmed by their high p-values.
+Neck, while borderline significant (p = 0.058), becomes insignificant
+once bicep and forearm are removed, suggesting its earlier significance
+was partly driven by surrounding noise. All three are dropped, giving
+our first candidate model (age + abdomen + wrist + height\_cm). An ANOVA
+test comparing the full model against the reduced model confirms that
+the dropped predictors do not meaningfully improve fit (F = 1.43, p =
+0.185).
 
 \subsection{Model Comparison}\label{model-comparison}
 
@@ -203,29 +191,30 @@ Criterion, imposes a heavier penalty on model complexity and therefore
 tends to favour simpler, more parsimonious models. As this aligns with
 our objective, we adopt BIC as our selection criterion.
 
-We observe that BIC reaches its minimum when the model includes 4
-predictors. Therefore, based on Figure X, we select the model with age,
-height, abdomen, and wrist. Interestingly, we obtain the same model as
-the first candidate model.
+Based on Figure \ref{fig:exh}, we observe that BIC reaches its minimum
+when the model includes 4 predictors. Therefore, we select the model
+with age, height, abdomen, and wrist (Figure \ref{fig:exh2}).
+Interestingly, we obtain the same model as the first candidate model.
 
 \subsubsection{Backward Variable
 Selection}\label{backward-variable-selection}
 
 We also conducted backward variable selection based on BIC. In this
 approach, variables are removed one at a time until the model reaches
-its minimum BIC value. Based on Figure X, the model achieves the lowest
-BIC when age, height, abdomen, and wrist are included as predictors.
-Notably, this also results in the same set of predictors as those
-obtained from the manual and exhaustive search methods.
+its minimum BIC value. Based on Figure \ref{fig:backward}, the model
+achieves the lowest BIC when age, height, abdomen, and wrist are
+included as predictors. Notably, this also results in the same set of
+predictors as those obtained from the manual and exhaustive search
+methods.
 
 \subsubsection{Forward Variable
 Selection}\label{forward-variable-selection}
 
 For further comparison, we also performed forward variable selection
 based on BIC. In this approach, variables are added one at a time until
-the model reaches its minimum BIC value. The resulting model includes
-abdomen, weight, and wrist as predictors, which becomes our second
-candidate model.
+the model reaches its minimum BIC value. According to Figure
+\ref{fig:forward}, the resulting model includes abdomen, weight, and
+wrist as predictors, which becomes our second candidate model.
 
 To assess which candidate model is best, we perform out-of-sample tests
 next.
@@ -233,36 +222,53 @@ next.
 \subsection{Cross Validation}\label{cross-validation}
 
 To evaluate the out-of-sample performance on unseen data, we apply
-10-fold cross-validation across our 2 candidate models. Rather than a
-single train-test split, 10-fold cross-validation repeatedly partitions
-the data into 10 equal folds, training on 9 and testing on the remaining
-1, cycling through all folds. This gives a more robust estimate of
-out-of-sample performance for a dataset of this size.
+10-fold cross-validation across our 2 candidate models. This repeatedly
+partitions the data into 10 equal folds, training on 9 and testing on
+the remaining 1, cycling through all folds.
 
-We tested this approach on 2 different models, with the differences as
-listed below:
+We tested this approach on 2 different models:
 
 \begin{itemize}
+\tightlist
 \item
-  Model 1: Manual/Exhaustive search model/Backward variable selection
+  Model 1: Manual/Exhaustive search/Backward selection
+\end{itemize}
+
+\vspace{-12pt}
+
+\begin{multline}
+\widehat{pct.bf} = 3.69 + 0.056\,age + 0.767\,abdomen \\ 
+- 1.929\,wrist - 0.128\,height\_cm
+\label{eqn:model1}
+\end{multline} \vspace{-12pt}
+
+\begin{itemize}
+\tightlist
 \item
   Model 2: Forward variable selection
 \end{itemize}
 
-Both models perform very similarly in terms of predictive ability.
+\vspace{-12pt}
 
-Based on MAE and RMSE (see Figure X), Model 1 performs slightly better
-than Model 2, with MAE lower by 0.034 and RMSE lower by 0.031. This
-suggests that Model 1 produces more accurate predictions on average and
+\begin{multline}
+\widehat{pct.bf} = -27.259 + 0.957\,abdomen \\ 
+- 0.208\,weight - 1.388\,wrist
+\label{eqn:model2}
+\end{multline} \vspace{-12pt}
+
+Both models perform similarly in terms of predictive ability. Based on
+MAE and RMSE (see Figure \ref{fig:crossval}), Model 1 performs slightly
+better than Model 2, with MAE lower by 0.034 and RMSE lower by 0.031.
+This suggests Model 1 produces more accurate predictions on average and
 is slightly better at limiting large prediction errors.
 
-In contrast, Model 2 has a marginally higher R2 (0.745 vs 0.724),
+In contrast, Model 2 has a marginally higher \(R^2\) (0.745 vs 0.724),
 indicating that it explains a slightly greater proportion of the
-variation in body fat percentage. However, a higher R2 does not
+variation in body fat percentage. However, a higher \(R^2\) does not
 necessarily imply better predictive performance, especially in this
-case. The improvement in R2 is likely driven by the inclusion of weight,
-which we identified as a problematic variable due to multicollinearity
-and weak conceptual relevance.
+case. The improvement in \(R^2\) is likely driven by the inclusion of
+weight, which we identified as a problematic variable due to
+multicollinearity and weak relevance.
 
 Importantly, both exhaustive and backward selection procedures (based on
 BIC) converge to the same specification as Model 1. This provides
@@ -273,93 +279,149 @@ most reliable predictors while avoiding unnecessary complexity.
 
 \subsection{Assumptions Checking}\label{assumptions-checking}
 
-In Figure X, the residuals vs fitted values plot for the final model
-shows a mild wave-like pattern, similar to Figure X for the initial
-model. However, as discussed previously, this is likely driven by
-limited observations at the upper extremes rather than true
-non-linearity, so the linearity assumption is considered satisfied.
-Residual diagnostics further show that the Q-Q plot is approximately
-linear, suggesting no major violations of normality. The scale-location
-plot shows a roughly horizontal trend, indicating no clear evidence of
-heteroskedasticity. Finally, independence is assumed since each
-observation corresponds to a different individual, with no repeated
-measurements, clustering, or time-series structure in the data.
+In Figure \ref{fig:residplot2}, the residuals vs fitted values plot for
+the final model shows a mild wave-like pattern, similar to Figure
+\ref{fig:residplot}. However, as discussed previously, this is likely
+driven by limited observations at the upper extremes rather than true
+non-linearity, so the linearity assumption is considered satisfied. The
+Q-Q plot is approximately linear with no major violations of normality,
+and the scale-location plot shows a roughly horizontal trend with no
+clear evidence of heteroskedasticity (Figure \ref{fig:scaleloc}).
+Independence is assumed as each observation corresponds to a different
+individual with no repeated measurements.
 
 Finally, no observations exceed three standard deviations from the mean,
 suggesting that there are no significant outliers.
 
 \section{Discussion and Conclusion}\label{discussion-and-conclusion}
 
-\begin{equation}
-  \begin{aligned}
-pct.bf = 3.69 + 0.056age + 0.767abdomen - 1.929wrist - 0.128height_cm
-       \label{eqn:model1} 
-  \end{aligned}
-\end{equation}
+The final model achieved an \(R^2\) value of 0.73, meaning that 73\% of
+the variation in body fat percentage is explained by the model.
 
-\section{References}\label{references}
+Abdomen is the strongest predictor, with a coefficient of 0.77. This
+means a 1 cm increase in abdomen circumference is associated with a 0.77
+increase in body fat percentage, holding other variables constant. Age
+showed a positive association, since people become less active and their
+bodies change composition as they get older. Height has a negative
+association, likely because taller individuals distribute mass over a
+larger frame, resulting in lower body fat.
 
-\newpage\appendix\section{Appendix}
+Wrist circumference had a negative coefficient (-1.93), suggesting that
+larger wrists are associated with lower body fat. Interestingly, we
+observed that wrist showed a slight positive correlation with body fat
+in isolation, but reverses direction in the full model - an example of
+Simpson's paradox. Future work should investigate this further by
+exploring alternative specifications and additional predictors to better
+understand the true role of wrist circumference in predicting body fat
+percentage.
 
-Figures and Tables should be labelled and referenced in the standard way
-using the \texttt{\textbackslash{}label\{\}} and
-\texttt{\textbackslash{}ref\{\}} commands.
+The 95\% prediction interval plot (Figure \ref{fig:pred_interval}) shows
+predictions closely follow the diagonal, indicating good overall fit.
+However, the interval is relatively wide and dips into negative values
+at the lower end, which is not physically possible. This suggests
+reduced reliability for individuals with very low body fat. Future work
+could explore bounded models such as beta regression.
 
-\begin{ShadedResult}
-\begin{verbatim}
-\begin{table}
+Key limitations include: First, the sample dataset includes only adult
+males, so model results may not generalise well to other populations.
+Second, while the sample size is adequate, it may be insufficient to
+reliably capture patterns at the extremes of the distribution. Finally,
+the predictor variables rely on manual tape measurements, potentially
+introducing slight measurement error.
 
-\caption{\label{tab:figure1}Summary of variables and units}
+Future research could address these by including more diverse
+populations, larger datasets, and additional predictors such as physical
+activity and diet. Overall, the model shows that body fat percentage can
+be reasonably estimated from a small set of body measurements, with
+relatively good predictive power.
+
+\vspace{-12pt}
+
+\begin{multline}
+\widehat{pct.bf} = 3.69 + 0.056\,age + 0.767\,abdomen \\ 
+- 1.929\,wrist - 0.128\,height\_cm
+\label{eqn:model1}
+\end{multline} \vspace{-12pt}
+
+\bibliography{pinp}
+
+\clearpage
+\appendix
+\section{Appendix}
+\begin{center}
+\begin{minipage}{\textwidth}
 \centering
-\begin{tabular}[t]{lll}
-\toprule
-Variable & Description & Unit\\
-\midrule
-Density & Body density & g/cm³\\
-Pct.BF & Body fat percentage & \%\\
-Age & Age of individual & years\\
-Weight & Body weight & lb\\
-Height & Height & in\\
-\addlinespace
-Neck & Neck circumference & cm\\
-Chest & Chest circumference & cm\\
-Abdomen & Abdomen circumference & cm\\
-Waist & Waist circumference & in\\
-Hip & Hip circumference & cm\\
-\addlinespace
-Thigh & Thigh circumference & cm\\
-Knee & Knee circumference & cm\\
-Ankle & Ankle circumference & cm\\
-Bicep & Bicep circumference & cm\\
-Forearm & Forearm circumference & cm\\
-\addlinespace
-Wrist & Wrist circumference & cm\\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=0.9\textwidth, height=7in]{summarytable.png}
+\captionof{figure}{Table Summary of Dataset}
+\label{fig:summary}
+\end{minipage}
+\end{center}
 
-\end{verbatim}
-\end{ShadedResult}
-
-\begin{ShadedResult}
-\begin{verbatim}
-#  pdf 
-#    2
-\end{verbatim}
-\end{ShadedResult}
-
-\begin{figure}
+\begin{figure*}[h]
   \begin{center}
-    \includegraphics[width=0.66\textwidth, height=3.5in, page =1]{figure2}
+    \includegraphics[width=0.8\textwidth, height=4in, page =1]{figure2}
   \end{center}
-  \caption{Correlation Matrix Plot}\label{fig:corr}
-\end{figure}
+  \caption{Correlation Matrix Plot\label{fig:corr}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.9\textwidth, height=3.3in]{exhaustive.png}
+  \end{center}
+  \caption{Exhaustive Search\label{fig:exh}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.85\textwidth, height=3.5in]{residplot_1.png}
+  \end{center}
+  \caption{Residual vs Fitted Plot\label{fig:residplot}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.9\textwidth, height=2.7in]{exhaustive2.png}
+  \end{center}
+  \caption{Exhaustive Search (Variables Selection)\label{fig:exh2}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth, height=2in]{backward_bic.png}
+  \end{center}
+  \caption{Backward Variable Selection\label{fig:backward}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth, height=2in]{forward_bic.png}
+  \end{center}
+  \caption{Forward Variable Selection\label{fig:forward}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth, height=2in]{crossval.png}
+  \end{center}
+  \caption{Cross validation results to compare candidate model performance\label{fig:crossval}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.9\textwidth, height=3.25in]{residplot_2.png}
+  \end{center}
+  \caption{Side-by-side diagnostic plots: residuals vs fitted values and normal Q-Q plot for final model\label{fig:residplot2}}
+\end{figure*}
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[width=0.85\textwidth, height=3.5in]{scaleloc.png}
+  \end{center}
+  \caption{Scale Location Plot to assess heteroskedasticity\label{fig:scaleloc}}
+\end{figure*}
+
+\begin{figure*}[h]
+\begin{center}
+\includegraphics[width=0.9\textwidth, height=4in]{prediction_interval.png}
+\end{center}
+\caption{95\% Prediction Interval\label{fig:pred_interval}}
+\end{figure*}
 
 %\showmatmethods
 
 
-\bibliography{pinp}
-\bibliographystyle{jss}
 
 
 
