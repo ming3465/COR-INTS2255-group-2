@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.19)  19 APR 2026 10:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.19)  19 APR 2026 10:16
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1454,19 +1454,19 @@ Package pdftex.def Info: figure2.pdf , page1 used on input line 362.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<exhaustive.png, id=118, 595.023pt x 328.22626pt>
-File: exhaustive.png Graphic file (type png)
-<use exhaustive.png>
-Package pdftex.def Info: exhaustive.png  used on input line 368.
-(pdftex.def)             Requested size: 455.13664pt x 238.49132pt.
+<residplot_1.png, id=118, 558.888pt x 324.0105pt>
+File: residplot_1.png Graphic file (type png)
+<use residplot_1.png>
+Package pdftex.def Info: residplot_1.png  used on input line 368.
+(pdftex.def)             Requested size: 429.85046pt x 252.94965pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<residplot_1.png, id=119, 558.888pt x 324.0105pt>
-File: residplot_1.png Graphic file (type png)
-<use residplot_1.png>
-Package pdftex.def Info: residplot_1.png  used on input line 374.
-(pdftex.def)             Requested size: 429.85046pt x 252.94965pt.
+<exhaustive.png, id=119, 595.023pt x 328.22626pt>
+File: exhaustive.png Graphic file (type png)
+<use exhaustive.png>
+Package pdftex.def Info: exhaustive.png  used on input line 374.
+(pdftex.def)             Requested size: 455.13664pt x 238.49132pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
@@ -1482,7 +1482,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 File: backward_bic.png Graphic file (type png)
 <use backward_bic.png>
 Package pdftex.def Info: backward_bic.png  used on input line 386.
-(pdftex.def)             Requested size: 404.56023pt x 144.5524pt.
+(pdftex.def)             Requested size: 404.56023pt x 122.869pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
@@ -1490,7 +1490,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 File: forward_bic.png Graphic file (type png)
 <use forward_bic.png>
 Package pdftex.def Info: forward_bic.png  used on input line 392.
-(pdftex.def)             Requested size: 404.5792pt x 144.55464pt.
+(pdftex.def)             Requested size: 404.5792pt x 122.87134pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
@@ -1529,7 +1529,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [3
 
 
- <./summarytable.png>] [4 <./figure2.pdf> <./exhaustive.png>] [5 <./residplot_1.png> <./exhaustive2.png>] [6 <./backward_bic.png> <./forward_bic.png> <./crossval.png>] [7 <./residplot_2.png> <./scaleloc.png>] [8 <./prediction_interval.png>] 
+ <./summarytable.png>] [4 <./figure2.pdf> <./residplot_1.png>] [5 <./exhaustive.png> <./exhaustive2.png> <./backward_bic.png>] [6 <./forward_bic.png> <./crossval.png> <./residplot_2.png>] [7 <./scaleloc.png> <./prediction_interval.png>] 
 enddocument/afterlastpage (AED): lastpage setting LastPage.
 (./G2-Report.aux)
  ***********
@@ -1543,18 +1543,18 @@ Package rerunfilecheck Info: File `G2-Report.out' has not changed.
 (rerunfilecheck)             Checksum: 52C265D4D11CC8489A55F91F756948F0;2092.
  ) 
 Here is how much of TeX's memory you used:
- 31973 strings out of 469296
- 590307 string characters out of 5463628
+ 31972 strings out of 469296
+ 590301 string characters out of 5463628
  1042736 words of memory out of 5000000
  59864 multiletter control sequences out of 15000+600000
  700436 words of font info for 297 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  117i,11n,121p,1006b,541s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/bitstrea/charter/bchr8a.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/bitstrea/charter/bchri8a.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr7t.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr7v.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr7y.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr8t.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvbo8a.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb>
-Output written on G2-Report.pdf (8 pages, 478851 bytes).
+Output written on G2-Report.pdf (7 pages, 478472 bytes).
 PDF statistics:
- 227 PDF objects out of 1000 (max. 8388607)
- 173 compressed objects within 2 object streams
- 38 named destinations out of 1000 (max. 500000)
+ 223 PDF objects out of 1000 (max. 8388607)
+ 170 compressed objects within 2 object streams
+ 37 named destinations out of 1000 (max. 500000)
  66740 words of extra memory for PDF output out of 74296 (max. 10000000)
 
